@@ -1,0 +1,9 @@
+[package]
+name = "numitron"
+version = "0.1.0"
+authors = ["kraefrei <christian.j.freitas@gmail.com>"]
+
+[dependencies]
+rppal = "0.10.0"
+chrono = "0.4.6"
+ctrlc = { version = "3.0", features = ["termination"] }

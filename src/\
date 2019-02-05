@@ -1,0 +1,52 @@
+// Program for displaying digits on a numitron seven segment display
+
+extern crate rppal;
+
+use std::error::Error;
+use std::thread::sleep;
+use std::time::Duration;
+
+
+use rppal::gpio::Gpio;
+use rppal::spi::{Bus, Mode, SlaveSelect, Spi};
+use SevenSegmentCharacters::*;
+const OE: u8 = 23;
+const LE: u8 = 22;
+
+fn main() -> Result<(), Box<dyn Error>> {
+    // Retrieve the GPIO pin and configure it as an output.
+    let mut output_enable_pin = Gpio::new()?.get(OE)?.into_output();
+    let mut latch_enable_pin = Gpio::new()?.get(LE)?.into_output();
+    //let args: Vec<String> = env::args().collect();
+    //let byte = &args[1] as u8;
+    // Disable driver output while shifting in next number
+    output_enable_pin.set_low();
+    // Initialize the latch pin low
+    latch_enable_pin.set_low();
+    let mut spi = Spi::new(Bus::Spi0, SlaveSelect::Ss0, 16_000_000, Mode::Mode0)?;
+    // Write a digit to the driver
+    spi.write(&[Five as u8])?;
+    println!("Writing arbitrary bits to display");
+    std::thread::sleep(Duration::from_millis(100));
+
+    // Flipping the latch
+    println!("Shifting bits...");
+    latch_enable_pin.set_high();
+    std::thread::sleep(Duration::from_millis(100));
+    latch_enable_pin.set_low();
+
+    println!("Display set!");
+    Ok(())
+}
+
+enum SevenSegmentCharacters {
+    Off = 0x00,
+    Zero = 0x77,
+    One = 0x41,
+    Two = 0x3B,
+    Three = 0x6B,
+    Four = 0x4D,
+    Five = 0x67,
+    C = 0x36,
+    E = 0x3E,
+}
